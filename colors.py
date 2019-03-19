@@ -1,5 +1,6 @@
 import os
 import math
+import logging
 import numpy as np
 import pickle as pkl
 
@@ -24,6 +25,11 @@ def distance(x, y, alg="euclidian"):
 
     if alg == "euclidian":
         dist = math.sqrt((rx-ry)**2 + (gx-gy)**2 + (bx-by)**2)
+    elif alg == "manhattan":
+        dist = np.abs(rx-ry) + np.abs(gx-gy) + np.abs(bx-by)
+    elif alg == "minkowski":
+        # TODO: implementar e inserir a potência
+        dist = 0.
 
     return dist 
 
@@ -44,16 +50,16 @@ def get_closest_pixels(img, colors=None):
     pixels = list(img.getdata())
 
     basic_colors = list(colors.keys())
-    print("basic_colors", basic_colors)
+    logging.debug("basic_colors", basic_colors)
 
     for point in pixels:
         closest_colors = sorted(colors, key=lambda color: distance(color, point))
         closest_color = closest_colors[0]
         colors[closest_color] += 1
 
-    print(colors)
+    logging.debug(colors)
 
-def get_clusters(image, n_clusters=3, resize_method="nearest", new_size=(50,50)):
+def get_colors(image, n_clusters=3, resize_method="nearest", new_size=(50,50)):
     pkl_file = image.split('.')[0] + ".pickle"
 
     if os.path.isfile(pkl_file):
@@ -76,21 +82,39 @@ def get_clusters(image, n_clusters=3, resize_method="nearest", new_size=(50,50))
 
         color_cluster = KMeans(n_clusters).fit(pixels)
         centroids = color_cluster.cluster_centers_
-        print(color_cluster.cluster_centers_)
+        logging.debug(color_cluster.cluster_centers_)
 
         save_file(pkl_file, centroids)
     return centroids
 
+def get_image_clusters(image_centroids, n_clusters=3):
+    logging.info("Agrupando imagens semelhantes")
+    image_clusters = KMeans(n_clusters).fit(image_centroids)
+    logging.debug(image_clusters.clusters_centers_)
+    input('')
+    return "oi"
+
+def get_colors_similarity(img_1, img_2):
+    dist_array = np.empty(img_1.shape[0])
+
+    # def distance(x, y, alg="euclidian")
+    for idx, value in enumerate(img_1.shape[0]):
+        dist_array[idx] = distance(img_1[idx], img_2[idx])
+
+    # TODO: deixar flexível pro número de dimensões de img
+    return dist_array 
+
+
 
 def load_file(file):
-    print("Carregando arquivo {}".format(os.path.basename(file)))
+    logging.info("Carregando arquivo {}".format(os.path.basename(file)))
     with open(file, 'rb') as f:
         data = pkl.load(f)
     return data 
 
 
 def save_file(file, data):
-    print("Salvando arquivo {}".format(os.path.basename(file)))
+    logging.info("Salvando arquivo {}".format(os.path.basename(file)))
     with open(file, 'wb') as f:
         pkl.dump(data, f)
 
@@ -108,6 +132,6 @@ def rgb_to_hex(rgb):
     for i in rgb:
         hex.append('#{:02x}{:02x}{:02x}'.format(int(i[0]), int(i[1]), int(i[2])))
 
-    #print("RGB: {}".format(rgb))
-    #print("HEX {}".format(hex))
+    logging.debug("RGB: {}".format(rgb))
+    logging.debug("HEX {}".format(hex))
     return hex

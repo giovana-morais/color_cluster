@@ -1,45 +1,52 @@
 import os
 import sys
 import time
+import logging
 
 from PIL import Image
 
 from colors import *
 from hist import *
 
+logging.basicConfig(format='%(levelname)s: %(message)s', level=logging.DEBUG)
+
 FILE = sys.argv[1]
 
 if os.path.isfile(FILE):
-    print("Parâmetro é um arquivo")
+    logging.debug("Parâmetro é um arquivo")
     if not os.path.isabs(FILE):
         FILE = os.path.join(os.getcwd(), FILE)
     #img = Image.open(FILE)
-    cluster = get_clusters(FILE, n_clusters=5)
+    cluster = get_colors(FILE, n_clusters=5)
     print(cluster)
     show_colors(cluster)
-
     
 elif os.path.isdir(FILE):
+    imgs = []
     clusters = []
     
-    print("Parâmetro é um diretório")
+    logging.debug("Parâmetro é um diretório")
     if not os.path.isabs(FILE):
         FILE = os.path.join(os.getcwd(), FILE)
     for root, dirs, files in os.walk(FILE):
         for i in files:
             tmp = {}
             tmp['id'] = os.path.join(root, i)
-            tmp['clusters'] = get_clusters(os.join(root, i), "nearest", 5)
-            clusters.append(tmp)
-    
+            tmp['clusters'] = get_colors(os.path.join(root, i), n_clusters= 5)
+            imgs.append(tmp)
+            clusters.append(tmp['clusters'])
 
-    print(clusters)
+    get_image_clusters(clusters)
+#    get_indexes(clusters)
+
+    logging.debug(clusters)
+    
 
 
 """
 print("Calculando distância com o kmeans")
 init = time.time()
-clusters = get_clusters(nearest, 5)
+clusters = get_colors(nearest, 5)
 print("Tempo de execução: {}".format(time.time()-init))
 
 show_color(clusters)
