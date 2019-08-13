@@ -16,19 +16,19 @@ if os.path.isfile(FILE):
     logging.debug("Parâmetro é um arquivo")
     if not os.path.isabs(FILE):
         FILE = os.path.join(os.getcwd(), FILE)
-    #img = Image.open(FILE)
-    cluster = get_colors(FILE, n_clusters=5)
+    cluster = get_colors(FILE, n_clusters=3)
     print(cluster)
     show_colors(cluster)
     
 elif os.path.isdir(FILE):
     imgs = []
     clusters = []
-    
+
     logging.debug("Parâmetro é um diretório")
     if not os.path.isabs(FILE):
         FILE = os.path.join(os.getcwd(), FILE)
     for root, dirs, files in os.walk(FILE):
+        if_ = True 
         for i in files:
             tmp = {}
             tmp['id'] = os.path.join(root, i)
@@ -36,6 +36,9 @@ elif os.path.isdir(FILE):
             imgs.append(tmp)
             clusters.append(tmp['clusters'])
 
+
+    logging.debug("GET IMAGE CLUSTERS")
+    logging.debug(clusters)
     get_image_clusters(clusters)
 #    get_indexes(clusters)
 

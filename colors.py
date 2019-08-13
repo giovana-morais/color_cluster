@@ -9,6 +9,8 @@ from sklearn import metrics
 from sklearn.cluster import KMeans
 import matplotlib.pyplot as plt
 
+import pdb
+
 
 def get_red(red_val):
     return (red_val, 0, 0)
@@ -22,7 +24,6 @@ def get_blue(blue_val):
 def distance(x, y, alg="euclidian"):
     (rx, gx, bx) = x
     (ry, gy, by) = y
-
     if alg == "euclidian":
         dist = math.sqrt((rx-ry)**2 + (gx-gy)**2 + (bx-by)**2)
     elif alg == "manhattan":
@@ -59,52 +60,49 @@ def get_closest_pixels(img, colors=None):
 
     logging.debug(colors)
 
-def get_colors(image, n_clusters=3, resize_method="nearest", new_size=(50,50)):
-    pkl_file = image.split('.')[0] + ".pickle"
+def get_colors(image, n_clusters=3, resize_method="bilinear", new_size=(200,200), save=False):
+    pkl_file = image.split('.')[0] + "_{}.pickle".format(n_clusters)
 
     if os.path.isfile(pkl_file):
         centroids = load_file(pkl_file)
     else:
         img = Image.open(image)
+        method = {"nearest": Image.NEAREST, 
+                  "bilinear": Image.BILINEAR,
+                  "bicubic": Image.BICUBIC,
+                  "lanczos": Image.LANCZOS}
 
-        if resize_method == "nearest":
-            resized = img.resize(new_size, Image.NEAREST)
-        elif resize_method == "bilinear":
-            resized = img.resize(new_size, Image.BILINEAR)
-        elif resize_method == "bicubic":
-            bicubic = img.resize(new_size, Image.BICUBIC)
-        elif resize_method == "lanczos":
-            lanczos = img.resize(new_size, Image.LANCZOS)
-        else:
-            raise(ValueError("{} is a invalid resize method".format(resize_method)))
+        resized = img.resize(new_size, method.get(resize_method))
+        data = np.asarray(resized)
+        r, g, b = data[:,:,0].flatten(), data[:,:,1].flatten(), data[:,:,2].flatten()
 
-        pixels = list(resized.getdata())
+        pixels = np.asarray(resized.getdata())
 
-        color_cluster = KMeans(n_clusters).fit(pixels)
+        print("PIXELS SHAPE {}".format(pixels.shape))
+        color_cluster = KMeans(n_clusters, init='random').fit(pixels)
         centroids = color_cluster.cluster_centers_
         logging.debug(color_cluster.cluster_centers_)
+        logging.debug(color_cluster.labels_)
 
-        save_file(pkl_file, centroids)
+        if save:
+            save_file(pkl_file, centroids)
     return centroids
 
 def get_image_clusters(image_centroids, n_clusters=3):
     logging.info("Agrupando imagens semelhantes")
-    image_clusters = KMeans(n_clusters).fit(image_centroids)
-    logging.debug(image_clusters.clusters_centers_)
+    print(image_centroids[0].shape)
     input('')
+    image_clusters = KMeans(n_clusters).fit(image_centroids)
+    logging.debug(image_clusters.cluster_centers_)
     return "oi"
 
 def get_colors_similarity(img_1, img_2):
     dist_array = np.empty(img_1.shape[0])
 
-    # def distance(x, y, alg="euclidian")
     for idx, value in enumerate(img_1.shape[0]):
         dist_array[idx] = distance(img_1[idx], img_2[idx])
 
-    # TODO: deixar flexível pro número de dimensões de img
     return dist_array 
-
-
 
 def load_file(file):
     logging.info("Carregando arquivo {}".format(os.path.basename(file)))
