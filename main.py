@@ -11,13 +11,13 @@ from hist import *
 logging.basicConfig(format='%(levelname)s: %(message)s', level=logging.DEBUG)
 
 FILE = sys.argv[1]
-N_COLORS = 5
+N_COLORS = sys.argv[2]
 
 if os.path.isfile(FILE):
     logging.debug("Argument is a file")
     if not os.path.isabs(FILE):
         FILE = os.path.join(os.getcwd(), FILE)
-    cluster = get_colors(FILE, n_colors=N_COLORS)
+    cluster = get_colors(FILE, n_colors=N_COLORS, save=True)
     print(cluster)
     show_colors(cluster)
 elif os.path.isdir(FILE):
