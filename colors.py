@@ -9,8 +9,6 @@ from sklearn import metrics
 from sklearn.cluster import KMeans
 import matplotlib.pyplot as plt
 
-import pdb
-
 def distance(x, y, alg="euclidian"):
     (rx, gx, bx) = x
     (ry, gy, by) = y
@@ -18,10 +16,8 @@ def distance(x, y, alg="euclidian"):
         dist = math.sqrt((rx-ry)**2 + (gx-gy)**2 + (bx-by)**2)
     elif alg == "manhattan":
         dist = np.abs(rx-ry) + np.abs(gx-gy) + np.abs(bx-by)
-
     return dist
 
-# dada uma matriz inicial, faz um agrupamento dos pixels mais próximos
 def get_closest_pixels(img, colors=None):
     if not colors:
         colors = {
@@ -34,7 +30,7 @@ def get_closest_pixels(img, colors=None):
                     (143, 0  , 255) : 0     # violet
                   }
 
-    # já retorna uma lista com cada item sendo uma tupla do tipo (r, g, b)
+    # returns a list and each item of it is a tuple (r, g, b)
     pixels = list(img.getdata())
 
     basic_colors = list(colors.keys())
@@ -46,14 +42,18 @@ def get_closest_pixels(img, colors=None):
         colors[closest_color] += 1
 
     logging.debug(colors)
+    return colors
 
 def get_colors(image, n_colors=3, method="kmeans"):
+    color_clusters = None
     if method == "kmeans":
-        get_colors_kmeans(image, n_colors)
+        color_clusters = get_colors_kmeans(image, n_colors)
     elif method == "quantization":
-        get_colors_quantization(image, n_colors)
+        color_clusters = get_colors_quantization(image, n_colors)
     else:
-        raise ValueError("Método não reconhecido")
+        raise ValueError("Unknow method")
+
+    return color_clusters
 
 def get_colors_kmeans(image, n_clusters=3, resize_method="bilinear", new_size=(200,200), save=False):
     pkl_file = image.split('.')[0] + "_{}.pickle".format(n_clusters)
@@ -73,7 +73,6 @@ def get_colors_kmeans(image, n_clusters=3, resize_method="bilinear", new_size=(2
 
         pixels = np.asarray(resized.getdata())
 
-        print("PIXELS SHAPE {}".format(pixels.shape))
         color_cluster = KMeans(n_clusters, init='random').fit(pixels)
         centroids = color_cluster.cluster_centers_
         logging.debug(color_cluster.cluster_centers_)
@@ -84,11 +83,11 @@ def get_colors_kmeans(image, n_clusters=3, resize_method="bilinear", new_size=(2
     return centroids
 
 def get_image_clusters(image_centroids, n_clusters=3):
-    logging.info("Agrupando imagens semelhantes")
+    logging.info("Grouping similar images")
     print(image_centroids[0].shape)
     image_clusters = KMeans(n_clusters).fit(image_centroids)
     logging.debug(image_clusters.cluster_centers_)
-    return "oi"
+    return image_clusters
 
 def get_colors_similarity(img_1, img_2):
     dist_array = np.empty(img_1.shape[0])
@@ -99,13 +98,13 @@ def get_colors_similarity(img_1, img_2):
     return dist_array
 
 def load_file(file):
-    logging.info("Carregando arquivo {}".format(os.path.basename(file)))
+    logging.info("Loading file {}".format(os.path.basename(file)))
     with open(file, 'rb') as f:
         data = pkl.load(f)
     return data
 
 def save_file(file, data):
-    logging.info("Salvando arquivo {}".format(os.path.basename(file)))
+    logging.info("Saving file {}".format(os.path.basename(file)))
     with open(file, 'wb') as f:
         pkl.dump(data, f)
 
