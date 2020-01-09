@@ -44,12 +44,12 @@ def get_closest_pixels(img, colors=None):
     logging.debug(colors)
     return colors
 
-def get_colors(image, n_colors=3, method="kmeans"):
+def get_colors(image, n_colors=3, method="kmeans", save=False):
     color_clusters = None
     if method == "kmeans":
-        color_clusters = get_colors_kmeans(image, n_colors)
+        color_clusters = get_colors_kmeans(image, n_colors, save=save)
     elif method == "quantization":
-        color_clusters = get_colors_quantization(image, n_colors)
+        color_clusters = get_colors_quantization(image, n_colors, save=save)
     else:
         raise ValueError("Unknow method")
 
@@ -79,7 +79,7 @@ def get_colors_kmeans(image, n_clusters=3, resize_method="bilinear", new_size=(2
         logging.debug(color_cluster.labels_)
 
         if save:
-            save_file(pkl_file, centroids)
+            save_file(pkl_file, n_clusters, centroids)
     return centroids
 
 def get_image_clusters(image_centroids, n_clusters=3):
@@ -103,7 +103,7 @@ def load_file(file):
         data = pkl.load(f)
     return data
 
-def save_file(file, data):
+def save_file(file, n_clusters, data):
     logging.info("Saving file {}".format(os.path.basename(file)))
     with open(file, 'wb') as f:
         pkl.dump(data, f)
