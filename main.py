@@ -8,7 +8,7 @@ from PIL import Image
 from colors import *
 from hist import *
 
-logging.basicConfig(format='%(levelname)s: %(message)s', level=logging.DEBUG)
+logging.basicConfig(format='%(levelname)s: %(message)s', level=logging.INFO)
 
 FILE = sys.argv[1]
 N_COLORS = int(sys.argv[2])
@@ -17,10 +17,9 @@ if os.path.isfile(FILE):
     logging.debug("Argument is a file")
     if not os.path.isabs(FILE):
         FILE = os.path.join(os.getcwd(), FILE)
-    cluster = get_colors(FILE, n_clusters=N_COLORS, save=True)
-    print(cluster)
-    print(cluster.labels_)
-    # show_colors(cluster)
+    cluster = get_colors(FILE, n_clusters=N_COLORS) #, save=True)
+    centroids = get_cluster_centers(cluster)
+    show_colors(centroids)
 elif os.path.isdir(FILE):
     imgs = []
     clusters = []
@@ -41,6 +40,5 @@ elif os.path.isdir(FILE):
     logging.debug("GET IMAGE CLUSTERS")
     logging.debug(clusters)
     get_image_clusters(clusters)
-#    get_indexes(clusters)
 
     logging.debug(clusters)

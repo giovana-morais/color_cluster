@@ -2,12 +2,13 @@ import os
 import math
 import logging
 import numpy as np
-import pickle as pkl
 
 from PIL import Image
 from sklearn import metrics
 from sklearn.cluster import KMeans
 import matplotlib.pyplot as plt
+
+import utils
 
 def distance(x, y, alg="euclidian"):
     (rx, gx, bx) = x
@@ -44,35 +45,43 @@ def get_closest_pixels(img, colors=None):
     logging.debug(colors)
     return colors
 
-def get_cluster_members(cluster_id, labels_array):
-    return np.where(labels_array == cluster_id)[0]
 
 def get_colors(image, n_clusters=3, resize_method="bilinear", new_size=(200,200), save=False):
     pkl_file = image.split('.')[0] + "_{}.pickle".format(n_clusters)
 
     if os.path.isfile(pkl_file):
-        centroids = load_file(pkl_file)
+        logging.info("Loading file")
+        clusters = utils.load_file(pkl_file)
     else:
+        logging.info("Generating palette")
         img = Image.open(image)
         method = {"nearest": Image.NEAREST,
                   "bilinear": Image.BILINEAR,
                   "bicubic": Image.BICUBIC,
                   "lanczos": Image.LANCZOS}
 
-        resized = img.resize(new_size, method.get(resize_method))
-        data = np.asarray(resized)
+        resized_img = img.resize(new_size, method.get(resize_method))
+        data = np.asarray(resized_img)
         r, g, b = data[:,:,0].flatten(), data[:,:,1].flatten(), data[:,:,2].flatten()
 
-        pixels = np.asarray(resized.getdata())
+        pixels = np.asarray(resized_img.getdata())
 
-        color_cluster = KMeans(n_clusters, init='random').fit(pixels)
-        centroids = color_cluster.cluster_centers_
-        logging.debug(color_cluster.cluster_centers_)
-        logging.debug(color_cluster.labels_)
+        clusters = kmeans(n_clusters, pixels)
+        logging.debug(clusters.cluster_centers_)
+        logging.debug(clusters.labels_)
 
         if save:
-            save_file(pkl_file, n_clusters, centroids)
-    return centroids
+            utils.save_file(pkl_file, n_clusters, clusters)
+    return clusters
+
+def kmeans(n_clusters, pixels):
+    return KMeans(n_clusters, init='random').fit(pixels)
+
+def get_cluster_centers(clusters):
+    return clusters.cluster_centers_
+
+def get_cluster_members(cluster_id, labels_array):
+    return np.where(labels_array == cluster_id)[0]
 
 def get_image_clusters(image_centroids, n_clusters=3):
     logging.info("Grouping similar images")
@@ -88,17 +97,6 @@ def get_colors_similarity(img_1, img_2):
         dist_array[idx] = distance(img_1[idx], img_2[idx])
 
     return dist_array
-
-def load_file(file):
-    logging.info("Loading file {}".format(os.path.basename(file)))
-    with open(file, 'rb') as f:
-        data = pkl.load(f)
-    return data
-
-def save_file(file, n_clusters, data):
-    logging.info("Saving file {}".format(os.path.basename(file)))
-    with open(file, 'wb') as f:
-        pkl.dump(data, f)
 
 def show_colors(rgb):
     bar = 0
