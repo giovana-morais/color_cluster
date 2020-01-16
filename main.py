@@ -17,9 +17,10 @@ if os.path.isfile(FILE):
     logging.debug("Argument is a file")
     if not os.path.isabs(FILE):
         FILE = os.path.join(os.getcwd(), FILE)
-    cluster = get_colors(FILE, n_colors=N_COLORS, save=True)
+    cluster = get_colors(FILE, n_clusters=N_COLORS, save=True)
     print(cluster)
-    show_colors(cluster)
+    print(cluster.labels_)
+    # show_colors(cluster)
 elif os.path.isdir(FILE):
     imgs = []
     clusters = []
@@ -32,7 +33,7 @@ elif os.path.isdir(FILE):
         for i in files:
             tmp = {}
             tmp['id'] = os.path.join(root, i)
-            tmp['clusters'] = get_colors(os.path.join(root, i), n_colors=N_COLORS)
+            tmp['clusters'] = get_colors(os.path.join(root, i), n_clusters=N_COLORS)
             imgs.append(tmp)
             clusters.append(tmp['clusters'])
 

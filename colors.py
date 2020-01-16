@@ -44,18 +44,10 @@ def get_closest_pixels(img, colors=None):
     logging.debug(colors)
     return colors
 
-def get_colors(image, n_colors=3, method="kmeans", save=False):
-    color_clusters = None
-    if method == "kmeans":
-        color_clusters = get_colors_kmeans(image, n_colors, save=save)
-    elif method == "quantization":
-        color_clusters = get_colors_quantization(image, n_colors, save=save)
-    else:
-        raise ValueError("Unknow method")
+def get_cluster_members(cluster_id, labels_array):
+    return np.where(labels_array == cluster_id)[0]
 
-    return color_clusters
-
-def get_colors_kmeans(image, n_clusters=3, resize_method="bilinear", new_size=(200,200), save=False):
+def get_colors(image, n_clusters=3, resize_method="bilinear", new_size=(200,200), save=False):
     pkl_file = image.split('.')[0] + "_{}.pickle".format(n_clusters)
 
     if os.path.isfile(pkl_file):
