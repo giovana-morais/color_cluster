@@ -11,7 +11,7 @@ from hist import *
 logging.basicConfig(format='%(levelname)s: %(message)s', level=logging.DEBUG)
 
 FILE = sys.argv[1]
-N_COLORS = sys.argv[2]
+N_COLORS = int(sys.argv[2])
 
 if os.path.isfile(FILE):
     logging.debug("Argument is a file")
