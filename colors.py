@@ -9,6 +9,7 @@ from sklearn.cluster import KMeans
 import matplotlib.pyplot as plt
 
 import utils
+import pdb
 
 def distance(x, y, alg="euclidian"):
     (rx, gx, bx) = x
@@ -98,12 +99,15 @@ def get_colors_similarity(img_1, img_2):
 
     return dist_array
 
-def show_colors(rgb):
+def show_colors(centroids, labels):
     bar = 0
-    hex = rgb_to_hex(rgb)
-    for i in rgb:
-        plt.bar(hex[bar], 2, color=hex[bar])
-        bar += 1
+    hex_colors = rgb_to_hex(centroids)
+    hex_colors = np.asarray(hex_colors)
+    bar_size = utils.compute_label_qty(labels)
+    idxs = np.argsort(bar_size)[::-1]
+
+    plt.bar(hex_colors[idxs], bar_size[idxs], color=hex_colors[idxs])
+    plt.tight_layout()
     plt.show()
 
 def rgb_to_hex(rgb):

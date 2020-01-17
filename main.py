@@ -2,11 +2,12 @@ import os
 import sys
 import time
 import logging
+import matplotlib.pyplot as plt
 
 from PIL import Image
 
 from colors import *
-from hist import *
+import pdb
 
 logging.basicConfig(format='%(levelname)s: %(message)s', level=logging.INFO)
 
@@ -19,7 +20,8 @@ if os.path.isfile(FILE):
         FILE = os.path.join(os.getcwd(), FILE)
     cluster = get_colors(FILE, n_clusters=N_COLORS) #, save=True)
     centroids = get_cluster_centers(cluster)
-    show_colors(centroids)
+    labels = cluster.labels_
+    show_colors(centroids, labels)
 elif os.path.isdir(FILE):
     imgs = []
     clusters = []
